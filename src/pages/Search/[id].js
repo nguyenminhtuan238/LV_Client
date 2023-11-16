@@ -1,4 +1,4 @@
-import { Getclass } from "@/store/Class";
+import { Getclass, SearchclassByHS } from "@/store/Class";
 import { unwrapResult } from "@reduxjs/toolkit";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -11,12 +11,11 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
-import { AddListclass, getidlistclass } from "@/store/listClass";
+import { AddListclass, getbyidHS, getidlistclass } from "@/store/listClass";
 import { Accesstoken } from "@/useapi/auth.api";
 import { Refreshtoken } from "@/store/user";
 import { getALLTeacher } from "@/store/Teacher";
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+
 export default function Home() {
   const ClassT = useSelector((state) => state.Class);
   const user = useSelector((state) => state.user);
@@ -26,13 +25,10 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [class1, setclass1] = useState([]);
   const [password, setpassword] = useState('');
-  const [page, setPage] = useState(1);
+  const [listClassID, setlistClassID] = useState([]);
+  
   useEffect(() => {
-    if(!localStorage.getItem(process.env.NEXT_PUBLIC_TOKEN)){
-      router.push("/login")
-    }
-  }, [dispatch,user.user]);
-  useEffect(() => {
+  
      async function GetALLTe(){
        try {
         const res = await dispatch(getALLTeacher());
@@ -73,16 +69,23 @@ export default function Home() {
     setOpen(false);
   };
   useEffect(() => {
-    async function GetclassALL() {
+   
+    async function GetclassALLID() {
       try {
-        const res = await dispatch(Getclass({page}));
+     
+        const res = await dispatch(SearchclassByHS({Search:router.query.id}));
         unwrapResult(res);
+      
       } catch (error) {
         console.log(error);
+        if(error?.er===2){
+          await Refreshtoken()
+          handleClickOpen()
+       }
       }
     }
-    GetclassALL();
-  }, [page]);
+    GetclassALLID();
+  }, [router.isReady,router]);
   const handleAddclass=async ()=>{
     try {
       const ID_HS=await Accesstoken(localStorage.getItem(process.env.NEXT_PUBLIC_TOKEN))
@@ -112,23 +115,19 @@ export default function Home() {
 
     }
   }
-  const handleChange = (event, value) => {
-    setPage(value);
-  };
   return (
     <>
-    
      {user.user?
         <div className="flex flex-col w-full lg:flex-row mb-3 mt-5">
   <div className="grid flex-grow h-full card w-2/3  rounded-box ">
       <div className="divide-y-8 divide-blue-500  before:divide-white before:content-[''] before:block  p-3">
-      <div className=" font-bold text-4xl mb-3">Danh sách Lớp học</div>
+      <div className=" font-bold text-4xl mb-3">Tìm Kiếm {router.query.id}</div>
       <div  className=" font-bold text-4xl"></div>
       </div>
-  {ClassT.isloading&&
+  {ClassT.isloadingid&&
       <div className="mt-10">
         
-        {ClassT.Class.map((item)=>{
+        {ClassT.Classid?.map((item)=>{
           return(
             <div key={item.ID_L} className="py-3">
            
@@ -142,7 +141,7 @@ export default function Home() {
 
             </div>
             <div className="m-3">
-            <Button onClick={()=>handleClickOpen(item.ID_L)}>Truy Cập Vào Lớp học</Button>
+            <Button onClick={()=>handleClickOpen(item.ID_L)} >Truy Cập Vào Lớp học</Button>
 
             </div>
             </div>
@@ -150,13 +149,7 @@ export default function Home() {
         })
         
         }
-        <div className="flex justify-center ">
-        <Stack spacing={2} >
-      <Pagination count={ClassT.pagesize} showFirstButton showLastButton  page={page} onChange={handleChange}/>
-     
-    </Stack>
-        </div>
-     
+      
       <Dialog
         open={open}
         keepMounted

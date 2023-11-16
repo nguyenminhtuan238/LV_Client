@@ -15,8 +15,7 @@ import { AddListclass, getidlistclass } from "@/store/listClass";
 import { Accesstoken } from "@/useapi/auth.api";
 import { Refreshtoken } from "@/store/user";
 import { getALLTeacher } from "@/store/Teacher";
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+
 export default function Home() {
   const ClassT = useSelector((state) => state.Class);
   const user = useSelector((state) => state.user);
@@ -26,13 +25,13 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [class1, setclass1] = useState([]);
   const [password, setpassword] = useState('');
-  const [page, setPage] = useState(1);
   useEffect(() => {
     if(!localStorage.getItem(process.env.NEXT_PUBLIC_TOKEN)){
-      router.push("/login")
+      router.push("/")
     }
   }, [dispatch,user.user]);
   useEffect(() => {
+  
      async function GetALLTe(){
        try {
         const res = await dispatch(getALLTeacher());
@@ -73,16 +72,17 @@ export default function Home() {
     setOpen(false);
   };
   useEffect(() => {
+   
     async function GetclassALL() {
       try {
-        const res = await dispatch(Getclass({page}));
+        const res = await dispatch(Getclass());
         unwrapResult(res);
       } catch (error) {
         console.log(error);
       }
     }
     GetclassALL();
-  }, [page]);
+  }, []);
   const handleAddclass=async ()=>{
     try {
       const ID_HS=await Accesstoken(localStorage.getItem(process.env.NEXT_PUBLIC_TOKEN))
@@ -112,17 +112,13 @@ export default function Home() {
 
     }
   }
-  const handleChange = (event, value) => {
-    setPage(value);
-  };
   return (
     <>
-    
      {user.user?
         <div className="flex flex-col w-full lg:flex-row mb-3 mt-5">
   <div className="grid flex-grow h-full card w-2/3  rounded-box ">
       <div className="divide-y-8 divide-blue-500  before:divide-white before:content-[''] before:block  p-3">
-      <div className=" font-bold text-4xl mb-3">Danh sách Lớp học</div>
+      <div className=" font-bold text-4xl mb-3">Tìm Kiếm</div>
       <div  className=" font-bold text-4xl"></div>
       </div>
   {ClassT.isloading&&
@@ -142,7 +138,7 @@ export default function Home() {
 
             </div>
             <div className="m-3">
-            <Button onClick={()=>handleClickOpen(item.ID_L)}>Truy Cập Vào Lớp học</Button>
+            <Button onClick={()=>handleClickOpen(item.ID_L)} >Truy Cập Vào Lớp học</Button>
 
             </div>
             </div>
@@ -150,13 +146,7 @@ export default function Home() {
         })
         
         }
-        <div className="flex justify-center ">
-        <Stack spacing={2} >
-      <Pagination count={ClassT.pagesize} showFirstButton showLastButton  page={page} onChange={handleChange}/>
-     
-    </Stack>
-        </div>
-     
+      
       <Dialog
         open={open}
         keepMounted
