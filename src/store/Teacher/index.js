@@ -1,6 +1,6 @@
 import AuthAPI from '@/services/auth.services';
 import { createSlice,createAsyncThunk } from '@reduxjs/toolkit'
-import { RefreshTeachertoken } from '../user';
+import { RefreshADMINtoken, RefreshTeachertoken } from '../user';
   export const updateTeacher = createAsyncThunk('Teacher/update', async (payload) => {
     try {
        await AuthAPI.updateTeacher(payload);
@@ -55,10 +55,46 @@ import { RefreshTeachertoken } from '../user';
       //throw error
     }
   });
+  export const getpageTeacher = createAsyncThunk('Teacher/Getpage', async (payload) => {
+    try {
+      const res=await AuthAPI.GetALLTE(payload)
+      return res;
+    } catch (error) {
+      
+       console.log(error);
+     
+     //throw error
+      //throw error
+    }
+  });
+  export const SearchGD = createAsyncThunk('Teacher/SearchGD', async (payload) => {
+    try {
+      const res = await AuthAPI.SearchGD(payload);
+      return res.get;
+    } catch (error) {
+      if (error.response.status === 410) {
+         try {
+          await RefreshADMINtoken()  
+          const res = await AuthAPI.SearchGD(payload);
+          return res.get;
+         } catch (error) {
+           console.log(error)
+         
+         }
+      }
+     else {
+        console.log(error);
+      }
+      //throw error
+    }
+  });
 const Teacher = createSlice({
   name: 'Teacher',
   initialState: {
     Teacher: {},
+    Teacherpage:[],
+    page:1,
+    isloadingpage:false,
     isloading:false,
     error:null,
   },
@@ -90,6 +126,18 @@ const Teacher = createSlice({
         state.isloading=false,
         state.error=action.error
       }),
+      builerUser.addCase(getpageTeacher.fulfilled,(state,action)=>{
+        state.Teacherpage=action.payload.get
+        state.page=action.payload.page
+        state.isloadingpage=true
+        state.error=null
+      }),
+      builerUser.addCase(getpageTeacher.rejected,(state,action)=>{
+        state.Teacherpage=[],
+        state.page=1,
+        state.isloadingpage=false,
+        state.error=action.error
+      }),
       builerUser.addCase(updateTeacher.fulfilled,(state,action)=>{
         state.Teacher=action.payload
         state.isloading=true
@@ -99,8 +147,17 @@ const Teacher = createSlice({
         state.Teacher={},
         state.isloading=false,
         state.error=action.error
+      }),
+      builerUser.addCase(SearchGD.fulfilled,(state,action)=>{
+        state.Teacherpage=action.payload
+        state.isloadingpage=true
+        state.error=null
+      }),
+      builerUser.addCase(SearchGD.rejected,(state,action)=>{
+        state.Teacherpage=[],
+        state.isloadingpage=false,
+        state.error=action.error
       })
-    
     
   }
 });

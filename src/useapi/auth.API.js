@@ -28,15 +28,15 @@ export const HandleRegister=async (payload)=>{
          }    
         }
 }
-export const DeleteAuth=async (payload)=>{
+export const DeleteAuth=async (id)=>{
     try {
-        const res=await AuthAPI.DeleteA(payload)
+        const res=await AuthAPI.DeleteA(id)
         return res
     } catch (error) {
         if (error.response.status === 410) {
             try {
              await RefreshADMINtoken()  
-            const res=  await AuthAPI.DeleteA(payload);
+            const res=  await AuthAPI.DeleteA(id);
              return res;
             } catch (error) {
                 throw payload

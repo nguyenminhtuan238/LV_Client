@@ -25,13 +25,7 @@ export const Sidebav=()=>{
      <span className="absolute  top-0 left-20 scale-0  rounded z-50 mt-10 bg-gray-800  p-2 text-white group-hover:scale-100">Quản lý môn </span>
    </div>
 
-    <div className="h-10 w-60 flex items-center group relative     justify-center rounded-lg cursor-pointer hover:text-gray-800 hover:bg-white  hover:duration-300 hover:ease-linear focus:bg-white">
-     
-  <Link className="rounded px-1 py-2 text-sm  shadow-sm" href="/admin">
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
-  </Link>
-  <span className="absolute  top-0 left-20 scale-0  rounded z-50 mt-10 bg-gray-800  p-2 text-white group-hover:scale-100">Quản lý môn </span>
-</div>
+  
   </aside>
     )
 }

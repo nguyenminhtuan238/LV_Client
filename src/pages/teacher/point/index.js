@@ -15,7 +15,7 @@ import { GetALLHS,SearchHS } from '@/store/Student';
 import readXlsxFile from 'read-excel-file'
 import { RefreshTeachertoken } from "@/store/user";
 import { Accesstoken } from "@/useapi/auth.api";
-import { AddPoint, getALLPoint, updatePoint } from "@/store/point";
+import { AddPoint, DeletePoint, getALLPoint, updatePoint } from "@/store/point";
 import { GetSubject } from "@/store/Subjectr";
 function Teacher() {
   const [openfile, setOpenfile] = useState(false);
@@ -118,20 +118,22 @@ const handlefile=async()=>{
     for(var i = 1; i <rows.length; i++) {
      
       try {
-        if(point.Point?.filter(item=>item.ID_M===rows[i][2] && item.ID_HS===rows[i][0] && item.ID_GD===IDTe).length>0){
+        const d=subject.subject?.filter(ite=>ite.Ten_Mon==rows[i][2])[0]?.ID_M
+        if(point.Point?.filter(item=>item.ID_M===d && item.ID_HS===rows[i][0] && item.ID_GD===IDTe).length>0){
           const data={
           
             DiemThi:rows[i][1],
-            id:point.Point?.filter(item=>item.ID_M===rows[i][2] && item.ID_HS===rows[i][0] && item.ID_GD===IDTe)[0].ID_D
+            id:point.Point?.filter(item=>item.ID_M===d && item.ID_HS===rows[i][0] && item.ID_GD===IDTe)[0].ID_D
           }
-          const res= await dispatch(updatePoint(data)) 
+           await dispatch(updatePoint(data)) 
         }else{
           const data={
-            ID_M:rows[i][2],
+            ID_M:d,
             ID_HS:rows[i][0],
             ID_GD:IDTe,
             DiemThi:rows[i][1],
           }
+          console.log(data)
           const res= await dispatch( AddPoint(data))
           unwrapResult(res)
         }
@@ -140,7 +142,7 @@ const handlefile=async()=>{
        console.log(error)
        Swal.fire(
         'Lỗi!',
-        'Xóa Thất Bại',
+        'Thêm Thất Bại',
         'error'
       )
       setlcheck(!lcheck)
@@ -185,6 +187,42 @@ if(DiemThi<0 || DiemThi>10){
   }
 }
 }
+const handleDelete=async (id)=>{
+  Swal.fire({
+    title: 'Bạn có chăc chắc xóa?',
+    text: "Sẽ Không thể khôi phục",
+    icon: 'warning',
+    showDenyButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Đồng Ý',
+    denyButtonText: `Không Đồng Ý`,
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+       const res= await dispatch(DeletePoint(id))
+        await unwrapResult(res)
+        Swal.fire(
+          'Xóa!',
+          'Xóa Thành Công',
+          'success'
+        )
+        setlcheck(!lcheck)
+      } catch (error) {
+        if(error){
+          Swal.fire(
+            'Lỗi!',
+            'Xóa Thất Bại',
+            'error'
+          )
+          setlcheck(!lcheck)
+        }
+      
+      }
+    
+    }
+  }) 
+}
   return (
     <>
       <main className="w-full flex-grow p-6">
@@ -207,7 +245,7 @@ if(DiemThi<0 || DiemThi>10){
                     <th className="text-left   py-3 px-4 uppercase font-semibold text-sm">Môn</th>
                     <th className="text-left   py-3 px-4 uppercase font-semibold text-sm">Điểm </th>
                     <th  className="text-left   py-3 px-4 uppercase font-semibold text-sm">Sửa  Điểm</th>
-                  
+                    <th  className="text-left   py-3 px-4 uppercase font-semibold text-sm">Xóa</th>
                 </tr>
             </thead>
             
@@ -222,6 +260,7 @@ if(DiemThi<0 || DiemThi>10){
                     <td className="text-left py-3 px-4 " >{item.DiemThi}</td>
                   
                     <td className="text-center py-3 px-4 hover:text-blue-500 cursor-pointer" onClick={()=>handleEdit(item.ID_D)}><i className="fa-solid fa-pen-to-square"></i></td>
+                    <td className="text-center py-3 px-4 hover:text-blue-500 cursor-pointer" onClick={()=>handleDelete(item.ID_D)}><i className="fa-solid fa-trash"></i></td>
                 </tr>
                     )
                 })

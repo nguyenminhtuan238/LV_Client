@@ -1,6 +1,6 @@
 import AuthAPI from '@/services/auth.services';
 import { createSlice,createAsyncThunk } from '@reduxjs/toolkit'
-import { RefreshTeachertoken, Refreshtoken } from '../user';
+import { RefreshADMINtoken, RefreshTeachertoken, Refreshtoken } from '../user';
   export const updateStudent = createAsyncThunk('Student/update', async (payload) => {
     try {
        await AuthAPI.update(payload);
@@ -64,6 +64,28 @@ import { RefreshTeachertoken, Refreshtoken } from '../user';
       //throw error
     }
   });
+  export const GetpageHS = createAsyncThunk('Student/Getpage', async (payload) => {
+    try {
+      const res = await AuthAPI.GetALL(payload);
+      return res;
+    } catch (error) {
+      if (error.response.status === 410) {
+         try {
+           await RefreshADMINtoken()
+          await RefreshTeachertoken()  
+          const res = await AuthAPI.GetALL(payload);
+          return res;
+         } catch (error) {
+           console.log(error)
+         
+         }
+      }
+     else {
+        console.log(error);
+      }
+      //throw error
+    }
+  });
   export const SearchHS = createAsyncThunk('Student/SearchHSL', async (payload) => {
     try {
       const res = await AuthAPI.SearchST(payload);
@@ -89,6 +111,9 @@ const Student = createSlice({
   name: 'Student',
   initialState: {
     Student: {},
+    Studentpage:[],
+    page:1,
+    isloadingpage:false,
     isloading:false,
     error:null,
   },
@@ -130,13 +155,25 @@ const Student = createSlice({
         state.isloading=false,
         state.error=action.error
       }),
+      builerUser.addCase(GetpageHS.fulfilled,(state,action)=>{
+        state.Studentpage=action.payload.get,
+        state.page=action.payload.page
+        state.isloadingpage=true
+        state.error=null
+      }),
+      builerUser.addCase(GetpageHS.rejected,(state,action)=>{
+        state.Studentpage=[],
+        state.page=1,
+        state.isloadingpage=false,
+        state.error=action.error
+      }),
       builerUser.addCase(SearchHS.fulfilled,(state,action)=>{
-        state.Student=action.payload
+        state.Studentpage=action.payload
         state.isloading=true
         state.error=null
       }),
       builerUser.addCase(SearchHS.rejected,(state,action)=>{
-        state.Student={},
+        state.Studentpage={},
         state.isloading=false,
         state.error=action.error
       })

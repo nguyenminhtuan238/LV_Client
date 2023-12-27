@@ -1,4 +1,5 @@
 import ApiadminServices from "./apiadmin.services"
+import ApiImageServices from "./ApiImage.services"
 import ApiImageuser from "./ApiImageuser.services"
 import ApiteacherServices from "./apiteacher.services"
 const { default: ApiServices } = require("./api.services")
@@ -6,8 +7,8 @@ const AuthAPI={
     Login(data){
        return ApiServices.post("api/auth/Login",data)
     },
-    DeleteA(data){
-        return ApiadminServices.delete(`api/auth/${data}`)
+    DeleteA(id){
+        return ApiadminServices.delete(`api/auth/${id}`)
     },
     LoginAdmin(data){
         return ApiServices.post("api/auth/Login/Admin",data)
@@ -22,7 +23,7 @@ const AuthAPI={
         return ApiServices.post("api/auth/GET/users/LKK/",)
     },
     updateTeacher(data){
-        return ApiteacherServices.put("api/auth/",data)
+        return ApiImageServices.put("api/auth/",data)
     },
     getTeacher(){
         return ApiteacherServices.post("api/auth/GET/users/LKK/")
@@ -55,13 +56,30 @@ const AuthAPI={
         return ApiServices.post("api/auth/",{token})
     },
     SearchST(data){
-        return ApiteacherServices.post("api/auth/Search/HS",data)
+        if(localStorage.getItem(process.env.NEXT_PUBLIC_ADMINTOKEN) && !localStorage.getItem(process.env.NEXT_PUBLIC_TEACHERTOKEN)){
+            return ApiadminServices.post("api/auth/Search/HS",data)
+        }else{
+            return ApiteacherServices.post("api/auth/Search/HS",data)
+
+        }
+     
     },
-    GetALL(){
-        return ApiteacherServices.post("api/auth/GetALL/")
+    SearchGD(data){
+      
+            return ApiadminServices.post("api/auth/Search/GD",data)
+        
+     
     },
-    GetALLTE(){
-        return ApiteacherServices.post("api/auth/GetALL/GD")
+    GetALL(data){
+        if(localStorage.getItem(process.env.NEXT_PUBLIC_ADMINTOKEN) && !localStorage.getItem(process.env.NEXT_PUBLIC_TEACHERTOKEN)){
+            return ApiadminServices.post("api/auth/GetALL/",data)
+        }else{
+            return ApiteacherServices.post("api/auth/GetALL/",data)
+
+        }
+    },
+    GetALLTE(data){
+        return ApiteacherServices.post("api/auth/GetALL/GD",data)
     },
     
     

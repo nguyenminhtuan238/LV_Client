@@ -32,7 +32,35 @@ export const AddListclass= createAsyncThunk('Listclass/ADD', async (payload) => 
       //throw error
     }
   });
-  
+  export const updateListclass= createAsyncThunk('Listclass/update', async (payload) => {
+    try {
+        
+       await ListClassAPI.Update(payload);
+      const Get=await ListClassAPI.GetStudent()
+      return Get.get;
+    } catch (error) {
+      if (error.response.status === 410) {
+         try {
+          await Refreshtoken()  
+          await ListClassAPI.Update(payload);
+          const Get=await ListClassAPI.GetStudent()
+          
+          return Get.get;
+         } catch (error) {
+           console.log(error)
+         
+         
+         }
+      } else {
+        console.log(error);
+        if(error?.response?.status===403){ 
+          throw {message:error.response.data.message,err:3}
+        }
+       
+      }
+      //throw error
+    }
+  });
   export const deletelistclass  = createAsyncThunk('listclass/delete', async (id) => {
     try {
         await ListClassAPI.Delete(id);
@@ -183,6 +211,16 @@ const ListClass = createSlice({
         state.error=null
       }),
       builerUser.addCase(AddListclass.rejected,(state,action)=>{
+        state.ListClassid=[],
+        state.isloadingid=false,
+        state.error=action.error
+      }),
+      builerUser.addCase(updateListclass.fulfilled,(state,action)=>{
+        state.ListClassid=action.payload
+        state.isloadingid=true
+        state.error=null
+      }),
+      builerUser.addCase(updateListclass.rejected,(state,action)=>{
         state.ListClassid=[],
         state.isloadingid=false,
         state.error=action.error

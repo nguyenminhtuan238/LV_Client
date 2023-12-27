@@ -15,6 +15,9 @@ import { AddListclass, getbyidHS, getidlistclass } from "@/store/listClass";
 import { Accesstoken } from "@/useapi/auth.api";
 import { Refreshtoken } from "@/store/user";
 import { getALLTeacher } from "@/store/Teacher";
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 export default function Home() {
   const ClassT = useSelector((state) => state.Class);
@@ -82,7 +85,7 @@ export default function Home() {
         const resClass = await dispatch(Getclass());
         unwrapResult(res);
        const result= unwrapResult(resClass);
-       setlistClassID(result.filter((item)=>res.payload.filter(it=>it.ID_L===item.ID_L).length))
+       setlistClassID(result.get?.filter((item)=>res.payload.filter(it=>it.ID_L===item.ID_L).length))
       } catch (error) {
         console.log(error);
         if(error?.er===2){
@@ -129,28 +132,34 @@ export default function Home() {
   <div className="grid flex-grow h-full card w-2/3  rounded-box ">
       <div className="divide-y-8 divide-blue-500  before:divide-white before:content-[''] before:block  p-3">
       <div className=" font-bold text-4xl mb-3">Các  Lớp học đã Đăng Ký</div>
-      <div  className=" font-bold text-4xl"></div>
+      <div  className=" font-bold text-4xl">
+        <img src="https://kenh14cdn.com/thumb_w/660/2018/9/26/hoatran-img8043-15379796122261097134105.jpg" className="w-full h-[350px] mt-1 object-cover"/>
+      </div>
       </div>
   {ClassT.isloading&&
       <div className="mt-10">
         
         {listClassID.map((item)=>{
           return(
-            <div key={item.ID_L} className="py-3">
-           
-            <div className="m-3">
-            <span  className="text-black  cursor-pointer text-2xl font-medium " onClick={()=>handleClickOpen(item.ID_L)}>{item.Ten_Lop}</span>
-
-            </div>
-           
-            <div className="m-3">
-            <span>Giáo Viên:{Teacher.isloading&&Teacher.Teacher.filter((it)=>it.ID_users===item.ID_GD)[0]?.Ten}</span>
-
-            </div>
-            <div className="m-3">
-            <Button onClick={()=>handleClickOpen(item.ID_L)} >Truy Cập Vào Lớp học</Button>
-
-            </div>
+            <div key={item.ID_L} className="py-3  border-b border-b-gray-300 mb-2">
+            <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+      <Box sx={{ my: 3, mx: 2 }}>
+        <Grid container alignItems="center">
+          <Grid item xs>
+            <Typography gutterBottom variant="h6" component="div">
+            Tên Lớp:       <span  className="text-black  cursor-pointer text-2xl font-medium hover:text-blue-700 " onClick={()=>handleClickOpen(item.ID_L)}>{item.Ten_Lop}</span>
+            </Typography>
+          </Grid>
+         
+        </Grid>
+        <Typography color="text.secondary" variant="body2">
+        {Teacher.isloading&&"Giáo Viên: "+ Teacher.Teacher.filter((it)=>it.ID_users===item.ID_GD)[0]?.Ten}
+        </Typography>
+      </Box>      
+      <Box sx={{ mt: 3, ml: 1, mb: 1 }}  onClick={()=>handleClickOpen(item.ID_L)}>
+        <Button  variant="outlined" className=" font-medium hover:bg-blue-500 hover:text-black ">Truy Cập Vào Lớp học</Button>
+      </Box>
+    </Box>
             </div>
           )
         })

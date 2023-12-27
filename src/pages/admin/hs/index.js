@@ -2,12 +2,22 @@ import { LayoutAdmin } from "@/Components/admin/layout/layout";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import readXlsxFile from 'read-excel-file'
-
-import { HandleRegister } from "@/useapi/auth.api";
-import { useSelector } from "react-redux";
+import { DeleteAuth, HandleRegister } from "@/useapi/auth.api";
+import { useSelector,useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { GetALLHS, GetpageHS, SearchHS } from "@/store/Student";
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
+import { unwrapResult } from "@reduxjs/toolkit";
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 export default function subject() {
+  const dispatch=useDispatch();
   const [First, setFirst] = useState("");
   const [Last, setLast] = useState("");
   const [username, setUsername] = useState("");
@@ -20,11 +30,47 @@ export default function subject() {
   const [File, setFile] = useState();
   const  user  = useSelector(state => state.user)
   const router = useRouter()
+  const [page, setPage] = useState(1);
+  const Student = useSelector((state) => state.Student);
+  const [Search, setSearch] = useState("");
+  const [IDHS, setIDHS] = useState("");
+  const [open, setOpen] = useState(false);
+  const [openIDHS, setOpenIDHS] = useState(false);
+  const [lcheck, setlcheck] = useState(false);
+  const [openfile, setOpenfile] = useState(false);
+  const [DelFile, setdeleteFile] = useState();
   useEffect(() => {
     if(!localStorage.getItem(process.env.NEXT_PUBLIC_ADMINTOKEN)){
       router.push("/admin/")
     }
   }, [user.admin]);
+  useEffect(() => {
+    async function GetALlHS(){
+        try {
+            const res = await dispatch(GetALLHS());
+            unwrapResult(res);
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+    GetALlHS()
+
+}, [lcheck]);
+  useEffect(() => {
+    async function GetHS(){
+        try {
+            const res = await dispatch(GetpageHS({page}));
+            unwrapResult(res);
+            
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+    GetHS()
+
+}, [page,lcheck]);
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
@@ -48,6 +94,8 @@ export default function subject() {
       setError("");
       setSDT("");
       setUsername("");
+      setlcheck(!lcheck)
+      setPage(1)
     } catch (error) {
       if (error?.er === 1) {
         setError(error.mess);
@@ -56,7 +104,12 @@ export default function subject() {
         setError(error.mess);
        
       }
+      setlcheck(!lcheck)
+      setPage(1)
     }
+  };
+  const handleChange = (event, value) => {
+    setPage(value);
   };
   const handlefile=async(e)=>{
     e.preventDefault(e)
@@ -75,8 +128,10 @@ export default function subject() {
             Ten: rows[i][4],
           };
         await HandleRegister(acc);
-        
-          Swal.fire("Thêm!", "Thêm Thành Công", "success");
+        if(rows[rows.length-1][0]===rows[i][0]){
+          await dispatch(GetpageHS({page}))
+        }
+      
           
         
         } catch (error) {
@@ -88,16 +143,140 @@ export default function subject() {
             Swal.fire("Thêm Thất Bại!", `Thêm Thất bại ${error.mess+""+rows[i][5]}  `, "error");
            
           }
+          setlcheck(!lcheck)
+          setPage(1)
         }
     }
       
     })
+    setlcheck(!lcheck)
+    setPage(1)
   }
+  const handleDelete= async (ID_HS)=>{
+    Swal.fire({
+      title: 'Bạn có chăc chắc xóa?',
+      text: "Sẽ Không thể khôi phục",
+      icon: 'warning',
+      showDenyButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Đồng Ý',
+      denyButtonText: `Không Đồng Ý`,
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await DeleteAuth(ID_HS)
+         
+          Swal.fire(
+            'Xóa!',
+            'Xóa Thành Công',
+            'success'
+          )
+          setlcheck(!lcheck)
+          setPage(1)
+        } catch (error) {
+          console.log(error)
+          if(error){
+            Swal.fire(
+              'Lỗi!',
+              'Xóa Thất Bại',
+              'error'
+            )
+          }
+        
+        }
+      
+      }
+    }) 
+ 
+  }
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSearch("")
+  };
+  const handleOpen = () => {
+      setOpenIDHS(true);
+    };
+  
+    const handleCloseHS= () => {
+      setOpenIDHS(false);
+      setIDHS("")
+    };
+    const handleSearch=async ()=>{
+   
+     
+      try {
+        const data={
+          Search,
+        }
+        const res = await dispatch(SearchHS(data));
+          unwrapResult(res);
+          setOpen(false)
+        setSearch("")
+      } catch (error) {
+        console.log(error);
+      }
+    
+    
+    }
+    const handleSearchID=async ()=>{
+        try {
+          const data={
+            ID_user:IDHS,
+          }
+          const res = await dispatch(SearchHS(data));
+            unwrapResult(res);
+            setOpenIDHS(false)
+          setIDHS("")
+        } catch (error) {
+          console.log(error);
+        }
+      
+      
+      }
+      const handleClickOpenfile = () => {
+        setOpenfile(true);
+      };
+      
+      const handleClosefile = () => {
+        setOpenfile(false);
+      };
+      const handledeteleUser=async()=>{
+    
+        readXlsxFile(DelFile[0]).then(async (rows) => {
+          for(var i = 1; i <rows.length; i++) {
+            try {
+              if(Student.Student?.filter(item=>item.ID_users===rows[i][0]).length>0){
+                await DeleteAuth(rows[i][0])
+              }
+           
+              setOpenfile(false)
+              setlcheck(!lcheck)
+              setPage(1)
+            } catch (error) {
+             console.log(error)
+             Swal.fire(
+              'Lỗi!',
+              'Xóa Thất Bại',
+              'error'
+            )
+            setlcheck(!lcheck)
+            break;
+            }
+        }
+     
+          
+        })
+      }
   return (
     <>
       <main className="max-w-full h-full flex relative overflow-y-hidden">
         <div className="h-full w-full m-4 flex flex-wrap items-start justify-start rounded-tl grid-flow-col auto-cols-max gap-4 overflow-y-scroll">
-          <div className="w-40 h-60 rounded-lg flex-shrink-0 flex-grow ">
+          <div className="w-20 h-50 rounded-lg flex-shrink-0 flex-grow ">
             <div className="flex items-center mb-4">
               <input
                 id="default-radio-1"
@@ -344,20 +523,159 @@ export default function subject() {
           ) : (
             ""
           )}
-          {/* <div className="w-60 h-60 rounded-lg flex-shrink-0 flex-grow ">
-            <table className=" border-collapse border border-slate-400 w-4/5">
+          {Student.isloadingpage&&
+          
+          <div className="w-80 h-60 rounded-lg flex-shrink-0 flex-grow ">
+          <p className="text-xl pb-3 flex items-center">
+       <Button className="btn" onClick={handleClickOpenfile}> <i className="fas fa-list mx-3"></i> Xóa Học Sinh Bằng file</Button>
+    </p>
+          <i className="fas fa-list mr-3"></i> <button className="btn" onClick={handleClickOpen}>Tìm Kiếm </button>
+     <i className="fas fa-list mr-3"></i> <button className="btn" onClick={handleOpen}>Tìm Kiếm Mã Học Sinh</button>
+     <i className="fas fa-list mr-3"></i> <button className="btn" onClick={()=>setlcheck(!lcheck)}>Tất Cả</button>
+            <table className=" border-collapse border border-slate-400 w-4/5 ">
               <thead className="border border-slate-300 ">
                 <tr>
-                  <th className="border border-slate-300 ">Môn</th>
+                  <th className="border border-slate-300 ">Mã Học Sinh</th>
+                  <th className="border border-slate-300 ">Tên Học Sinh</th>
                   <th className="border border-slate-300">Xóa</th>
-                  <th className="border border-slate-300">Sửa</th>
-                  <th className="border border-slate-300"></th>
                 </tr>
               </thead>
-              <tbody></tbody>
+              <tbody>
+                   
+            {Student.Studentpage?.map(item=>{
+                    return(
+                        <tr key={item.ID_users}>
+                    <td className="w-1/5 text-left py-3 px-4 border border-slate-300">{item.ID_users}</td>
+                    <td className="w-2/3 text-left py-3 px-4 border border-slate-300">{item.Ten}</td>
+                    <td className="border border-slate-300">
+                    <div className="flex item-center justify-center cursor-pointer " onClick={()=>handleDelete(item.ID_users)}>
+                      <div className="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                    )
+                })
+            }
+              </tbody>
             </table>
-          </div> */}
+            <div className="flex justify-center ">
+        <Stack spacing={2} >
+      <Pagination count={Student.page} showFirstButton showLastButton  page={page} onChange={handleChange}/>
+     
+    </Stack>
         </div>
+          </div>
+          }
+        </div>
+        <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Tìm Kiếm </DialogTitle>
+        <DialogContent>
+          
+<TextField
+            autoFocus
+            margin="dense"
+            id="CH"
+            label="Nhập Tên"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={Search}
+            onChange={(e)=>setSearch(e.target.value)}
+            required
+          />
+          
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSearch} >Tìm</Button>
+          <Button onClick={handleClose}>Thoát</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={openIDHS} onClose={handleCloseHS}>
+        <DialogTitle>Tìm Kiếm </DialogTitle>
+        <DialogContent>
+          
+<TextField
+            autoFocus
+            margin="dense"
+            id="CH"
+            label="Nhập Mã Học Sinh"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={IDHS}
+            onChange={(e)=>setIDHS(e.target.value)}
+            required
+          />
+          
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSearchID} >Tìm</Button>
+          <Button onClick={handleCloseHS}>Thoát</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={openfile} onClose={handleClosefile}>
+        <DialogTitle>Xóa Học Sinh </DialogTitle>
+        <DialogContent>
+        <div className="w-full h-60 rounded-lg flex-shrink-0 flex-grow ">
+            <div className="p-6 border border-gray-300 sm:rounded-md">
+            <div className="mb-5 border border-gray-300 w-20">
+            <span>File Mẫu</span>
+            <Link href="http://localhost:5000/public/fileDeluser/" download>
+            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><path d="M256 8C119.3 8 8 119.2 8 256c0 136.7 111.3 248 248 248s248-111.3 248-248C504 119.2 392.7 8 256 8zM33 256c0-32.3 6.9-63 19.3-90.7l106.4 291.4C84.3 420.5 33 344.2 33 256zm223 223c-21.9 0-43-3.2-63-9.1l66.9-194.4 68.5 187.8c.5 1.1 1 2.1 1.6 3.1-23.1 8.1-48 12.6-74 12.6zm30.7-327.5c13.4-.7 25.5-2.1 25.5-2.1 12-1.4 10.6-19.1-1.4-18.4 0 0-36.1 2.8-59.4 2.8-21.9 0-58.7-2.8-58.7-2.8-12-.7-13.4 17.7-1.4 18.4 0 0 11.4 1.4 23.4 2.1l34.7 95.2L200.6 393l-81.2-241.5c13.4-.7 25.5-2.1 25.5-2.1 12-1.4 10.6-19.1-1.4-18.4 0 0-36.1 2.8-59.4 2.8-4.2 0-9.1-.1-14.4-.3C109.6 73 178.1 33 256 33c58 0 110.9 22.2 150.6 58.5-1-.1-1.9-.2-2.9-.2-21.9 0-37.4 19.1-37.4 39.6 0 18.4 10.6 33.9 21.9 52.3 8.5 14.8 18.4 33.9 18.4 61.5 0 19.1-7.3 41.2-17 72.1l-22.2 74.3-80.7-239.6zm81.4 297.2l68.1-196.9c12.7-31.8 17-57.2 17-79.9 0-8.2-.5-15.8-1.5-22.9 17.4 31.8 27.3 68.2 27.3 107 0 82.3-44.6 154.1-110.9 192.7z"/></svg>
+            </Link> 
+         
+            </div>
+              <form
+                method="POST"
+                action="https://herotofu.com/start"
+                encType="multipart/form-data"
+            
+              >
+                <label className="block mb-6">
+                  <span className="text-gray-700">File Xóa Học Sinh</span>
+                  <input
+                    required
+                    name="photo"
+                    type="file"
+                    accept=".xlsx"
+
+                    className="
+            block
+            w-full
+            mt-1
+            focus:border-indigo-300
+            focus:ring
+            focus:ring-indigo-200
+            focus:ring-opacity-50
+          "       onChange={(e)=>setdeleteFile(e.target.files)}
+                  />
+                </label>
+               
+                <div></div>
+              </form>
+            </div>
+            </div>
+        </DialogContent>
+        <DialogActions>
+       
+          <Button onClick={handledeteleUser}>Xóa</Button>
+          <Button onClick={handleClosefile}>Thoát</Button>
+        </DialogActions>
+      </Dialog>
       </main>
     </>
   );

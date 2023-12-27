@@ -13,7 +13,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { getidlistclass } from "@/store/listClass";
 import { Accesstoken } from "@/useapi/auth.api";
 import { Refreshtoken } from "@/store/user";
-import { getidClass } from "@/store/Exam";
+import { getidClass, getidExam } from "@/store/Exam";
 import { AddTest, getidtest } from "@/store/test";
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -31,6 +31,7 @@ export default function Home() {
   const [IDHS, setID_HS] = useState(0);
   const [solan, setsolan] = useState(0);
   const [BT, setBT] = useState([]);
+  
   useEffect(() => {
     if(!localStorage.getItem(process.env.NEXT_PUBLIC_TOKEN)){
       router.push("/")
@@ -43,16 +44,16 @@ export default function Home() {
         try {
           const ID_HS=await Accesstoken(localStorage.getItem(process.env.NEXT_PUBLIC_TOKEN))
           const data={
+            ID_KT:router.query.id,
             ID_HS:ID_HS.a.id,
-            ID_L:router.query.id
           }
           setID_HS(ID_HS.a.id)
-          const res = await dispatch(getidlistclass(data));
+          const res = await dispatch(getidtest(data));
           const result= unwrapResult(res);
-          if(result.length===0){
-            
-            router.push(`/`)
-          }
+          
+          setBT(result)
+          setsolan(result.length)
+
         } catch (error) {
           if(error?.er===2){
             await Refreshtoken()
@@ -63,30 +64,22 @@ export default function Home() {
       }
       handlecheck()
   }, [router.isReady]);
-  const handleClickOpen = async (id) => {
-    setexam(Exam.Examid.filter(item=>item.ID_KT===id))
-    try {
-      const data={
-        ID_KT:id,
-        ID_HS:IDHS,
+  useEffect(() => {
+    async function Getexam() {
+      if(router.isReady){
+      try {
+        const res = await dispatch(getidExam(router.query.id));
+        const result= unwrapResult(res);
+         await dispatch(GetbyIDClass(result[0].ID_L));
+         setexam(result)
+      } catch (error) {
+        console.log(error);
       }
-      const add=await dispatch(getidtest(data))
-      const result=  unwrapResult(add)
-      setsolan(result.length)
-      setBT(result)
-      // if(result.length>0){
-      //   setBT(result)
-     
-      // }else{
-      //   setBT([])
-      // }
-      setOpen(true);
-      
-    } catch (error) {
-      console.log(error)
     }
-  };
-
+    }
+    Getexam();
+  }, [router.isReady]);
+  
   const handleClose = () => {
     setOpen(false);
   };
@@ -123,7 +116,6 @@ export default function Home() {
           Solan:1,
           End_Exam:date
         }
-        console.log(data)
         const add=await dispatch(AddTest(data))
         unwrapResult(add)
         const get=await dispatch(getidtest({ID_KT:exam[0].ID_KT,ID_HS:IDHS}))
@@ -143,33 +135,6 @@ export default function Home() {
     }
   
   }
-  useEffect(() => {
-    async function GetclassALL() {
-     if(router.isReady){
-      try {
-        const res = await dispatch(GetbyIDClass(router.query.id));
-        unwrapResult(res);
-      } catch (error) {
-        console.log(error);
-      }
-     }
-    }
-    GetclassALL();
-  }, [router.isReady]);
-  useEffect(() => {
-    async function Getexam() {
-      if(router.isReady){
-      try {
-        const res = await dispatch(getidClass(router.query.id));
-        unwrapResult(res);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    }
-    Getexam();
-  }, [router.isReady]);
-  
   return (
 
     <>
@@ -185,82 +150,36 @@ export default function Home() {
 </div>
       }
       <div className="divide-y-8 divide-blue-500  before:divide-white before:content-[''] before:block  p-3">
-      <div className=" font-bold text-4xl mb-3">Kỳ Thi</div>
+      <div className=" font-bold text-4xl mb-3">{Exam.isloadingid&&Exam.Examid[0]?.Ten_KT}</div>
       <div  className=" font-bold text-4xl">
       </div>
       </div>
-      
-    {Exam.isloadingid&&
       <div className="mt-10">
-        {Exam.Examid.filter((item)=>item.Status!=="Đang khởi tạo" || item.Status==="Hoàn Thành").map((item)=>{
-          return(
-            <div key={item.ID_KT} className="py-3 border-b border-b-gray-300 mb-2">
-            <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-      <Box sx={{ my: 3, mx: 2 }}>
-        <Grid container alignItems="center">
-          <Grid item xs>
-            <Typography gutterBottom variant="h6" component="div">
-            Tên Kỳ Thi:  <span  className="text-black  cursor-pointer text-2xl font-medium hover:text-blue-700" onClick={()=>handleClickOpen(item.ID_KT)}>{item.Ten_KT}</span>
-            </Typography>
-          </Grid>
-         
-        </Grid>
-       
-      </Box>      
-      <Box sx={{ mt: 3, ml: 1, mb: 1 }}  onClick={()=>handleClickOpen(item.ID_KT)}>
-        <Button  variant="outlined" className=" font-medium hover:bg-blue-500 hover:text-black ">Tham Gia Kỳ Thi</Button>
-      </Box>
-    </Box>
-            {/* <div className="m-3">
-            <span  className="text-black  cursor-pointer text-2xl font-medium " >Tên Kỳ Thi: </span>
-            <span  className="text-black  cursor-pointer text-2xl font-medium hover:text-blue-700" onClick={()=>handleClickOpen(item.ID_KT)}>{item.Ten_KT}</span>
-
-            </div>
-           
-          
-            <div className="m-3">
-            <Button onClick={()=>handleClickOpen(item.ID_KT)} className="">Tham Gia Kỳ Thi</Button>
-
-            </div> */}
-         
-            </div>
-          )
-        })
-        
-        }
-      
-        <Dialog
-        open={open}
-        keepMounted
-        onClose={handleClose}
-        aria-describedby="alert-dialog-slide-description"
-      >
-        <DialogTitle>{"Tham Gia Thi"}</DialogTitle>
-        <DialogContent>
-        <div className="overflow-x-auto">
-  <table className="table">
+      <div className="overflow-x-auto">
+  <table className="table-auto w-full">
     {/* head */}
-    <thead>
+    <thead className="text-xs font-semibold uppercase text-gray-400 bg-gray-50">
       <tr>
-        <th>Số Lần</th>
-        <th>Thời Gian Thi</th>
-        <th>Điểm</th>
+        <th className="p-2 whitespace-nowrap"> <div className="font-semibold text-left">Số Lần</div></th>
+        <th  className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Thời Gian Thi</div></th>
+        <th  className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Điểm</div></th>
       </tr>
     </thead>
     {BT.length!==0&&
-    <tbody>
+    <tbody  className="text-sm divide-y divide-gray-100">
       {
         BT.map(item=>{
           return(
             <tr key={item.ID_BT}>
-        <th>{item.Solan}</th>
-        <td>{
+        <th  className="p-2 whitespace-nowrap"> <div className="text-left"> {item.Solan}</div></th>
+        <td  className="p-2 whitespace-nowrap"> <div className="text-left">{
+          
           Math.floor((( new Date(item.End_Exam).getTime()- new Date(item.Start_Exam).getTime())/ (1000 * 60*60)))
           +":"+Math.floor((( new Date(item.End_Exam).getTime()- new Date(item.Start_Exam).getTime()) % (1000 * 60*60)/ (1000 * 60)))
           +":"+Math.floor((( new Date(item.End_Exam).getTime()- new Date(item.Start_Exam).getTime())% (1000*60) / (1000)))
-        }
+        }</div>
         </td>
-        <td>{item.Diem>=0?item.Diem?.toFixed(2):"Chưa Hoàn Thành"}</td>
+        <td  className="p-2 whitespace-nowrap"> <div className="text-left">{item.Diem>=0?item.Diem?.toFixed(2):"Chưa Hoàn Thành"}</div></td>
       </tr>
           )
         })
@@ -270,37 +189,19 @@ export default function Home() {
     </tbody>
     }
   </table>
-</div>
-        <div>
-          <p className="text-center mb-5 mt-4">Sô lần Được Thi</p>
-          <p className="text-center">{ exam.length!==0? exam[0].solan:"" }</p>
-        </div>
-        <div>
-          <p className="text-center  mb-5 mt-4">Sô lần Đã Thi</p>
-          <p className="text-center">{ solan }</p>
-        </div>
-        </DialogContent>
-        {exam.length!==0?new Date(Date.now()).getTime()<=new Date(exam[0].End_TIme).getTime()?
-        <DialogActions>
-         { BT.length===0? <Button onClick={()=>handleAddtest()}>Tham Gia </Button>:
-              new Date(BT[solan-1]?.End_Exam).getTime()-new Date(Date.now()).getTime()<=0?exam[0].solan ===solan
+       <div className="flex justify-center items-center ">
+       
+       { BT.length===0? <Button onClick={()=>handleAddtest()}>Tham Gia</Button>:
+              new Date(BT[solan-1]?.End_Exam).getTime()-new Date(Date.now()).getTime()<=0?exam[0]?.solan ===solan
               ?<Button disabled>Quá Giá Hạn Làm Bài </Button>
               : <Button onClick={()=>handleAddtest()}>Tham Gia </Button>:<Button ><Link href={`/Exam/${ BT[solan-1]?.ID_BT}`}> Tiếp Tục </Link></Button> }
         
-          <Button onClick={handleClose}>tHoát</Button>
-        </DialogActions>
-        :<DialogActions>
-        <Button disabled>Đã Hết Thời Gian Làm Bài </Button>
-        <Button onClick={handleClose}>tHoát</Button> 
-        </DialogActions>
-        :<DialogActions><Button onClick={handleClose}>tHoát</Button> </DialogActions>
-        }
-
-      </Dialog>
+          <Button className="ml-5">  {ClassT.isloading&& <Link href={`/${ClassT.Classid[0]?.ID_L}`}>Trở Về</Link>}  </Button>
+       </div>
+</div>
       </div>
-    }
-    </div>
-    <div className="divider lg:divider-horizontal"></div> 
+      </div>
+      <div className="divider lg:divider-horizontal"></div> 
   <div className="grid flex-grow h-full  card  rounded-box place-items-center">
     
 <div className="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
@@ -324,6 +225,7 @@ export default function Home() {
 
   </div>
     </div>
+    
     </>
   )
 }

@@ -25,11 +25,14 @@ const newPassword = () => {
     try {
       const newp=await dispatch(Resetpass(data))
       const res=unwrapResult(newp)
+      setpassword("")
+      setnewpassword("")
       enqueueSnackbar('Đổi Mật Khẩu thành công', {
         variant: 'success',
         autoHideDuration: 1200,
         anchorOrigin: { vertical: 'top', horizontal: 'right' },
       });
+    
       return res
     } catch (error) {
       console.log(error)
@@ -52,15 +55,16 @@ const newPassword = () => {
           <form className="space-y-6" onSubmit={(e)=>handle(e)} method="post">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Mật KHẩu Cũ
+                Mật Khẩu Cũ
               </label>
               <div className="mt-1">
                 <input
                   id="email"
                   name="email"
-                  type="text"
+                  type="password"
                   autoComplete="email"
                   required
+                  value={password}
                   onChange={(e)=>setpassword(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
@@ -82,6 +86,8 @@ const newPassword = () => {
                   type="password"
                   autoComplete="current-password"
                   required
+                  value={newpassword}
+
                   onChange={(e)=>setnewpassword(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />

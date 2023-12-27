@@ -31,24 +31,15 @@ function Teacher() {
   }, [user.Teacher]);
  
   useEffect(() => {
-    async function GetQuestionbyid() {
-      try {
-        const res = await dispatch(getQuestionid(router.query.id));
-        const result= unwrapResult(res);
-       
-           
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    GetQuestionbyid();
     async function GetidAnswer() {
     
   
       try {
+        const resQ = await dispatch(getQuestionid(router.query.id));
+        const resultQ= unwrapResult(resQ);
         const res = await dispatch(getbyidAnswer(router.query.id));
        const result= unwrapResult(res);
-       if( Question.Questionid[0].HinhThuc==="Tự Luận" && result.filter((item)=>item.Noidung==="").length===0 ){
+       if(resultQ[0].HinhThuc=="Tự Luận" && result.filter((item)=>item.Noidung==="").length===0 ){
         const data =  {
           Noidung:"",
           Ketqua:0,
@@ -56,6 +47,7 @@ function Teacher() {
           ID_CH: router.query.id,
         }
           await AddAnswer(data);
+          setcheck(!check)
         }
       } catch (error) {
         console.log(error);

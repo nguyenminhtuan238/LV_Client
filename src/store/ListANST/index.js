@@ -49,16 +49,16 @@ export const AddAnswerST= createAsyncThunk('AnswerST/ADD', async (payload) => {
       //throw error
     }
   });
-  export const DeleteAnswerST = createAsyncThunk('AnswerST/Delete', async (payload) => {
+  export const DeleteAnswerST = createAsyncThunk('AnswerST/Delete', async (id) => {
     try {
-        const Get=await AnswerSTAPI.Delete(payload);
+        const Get=await AnswerSTAPI.Delete(id);
 
         return Get;
     } catch (error) {
       if (error.response.status === 410) {
          try {
           await Refreshtoken()  
-          const Get=await AnswerSTAPI.Delete(payload);
+          const Get=await AnswerSTAPI.Delete(id);
 
         return Get;
          } catch (error) {

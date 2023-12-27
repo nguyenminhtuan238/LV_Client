@@ -6,7 +6,7 @@ import LayoutTeacher from "@/Components/teacher/layout/layout";
 import { GetSubject } from "@/store/Subjectr";
 import Swal from "sweetalert2";
 import { AddQuestion } from "@/useapi/Question.API";
-import {  DeleteQuestion, getQuestionALL, getQuestionid, SearchQuestion, updateQuestion } from "@/store/Question";
+import {  DeleteQuestion, getQuestionALL, getQuestionid, SearchQuestionsubject, updateQuestion } from "@/store/Question";
 import { AddAnswer, DeleteQAnswer } from "@/useapi/Answer.API";
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -129,10 +129,10 @@ function Teacher() {
         ID_M: subject.subject.filter((item) => item.Ten_Mon === searchMon)[0].ID_M
       }
       console.log(data)
-      const res = await dispatch(SearchQuestion(data));
+      const res = await dispatch(SearchQuestionsubject(data));
         unwrapResult(res);
         setOpen(false)
-      
+  
       setSearch("")
     } catch (error) {
       console.log(error);
@@ -565,6 +565,7 @@ function Teacher() {
                     <th  className="text-left   py-3 px-4 uppercase font-semibold text-sm"> Chọn Câu Hỏi</th>
                     <th className="text-left   py-3 px-4 uppercase font-semibold text-sm">Độ Khó</th>
                     <th className="text-left   py-3 px-4 uppercase font-semibold text-sm">Môn</th>
+                    <th className="text-left   py-3 px-4 uppercase font-semibold text-sm">Hình Thức</th>
                     <th className="text-left   py-3 px-4 uppercase font-semibold text-sm">Điểm</th>
                     <th className="text-left   py-3 px-4 uppercase font-semibold text-sm">Đáp Án</th>
                     <th className="text-left   py-3 px-4 uppercase font-semibold text-sm">Sửa</th>
@@ -586,6 +587,7 @@ function Teacher() {
 
              <td className="text-center py-3 px-4 ">{item.DoKho}</td>
              <td className="text-center py-3 px-4 ">{subject.isloading&& subject.subject.filter((i) => i.ID_M === item.ID_M)[0].Ten_Mon}</td>
+             <td className="text-center py-3 px-4 ">{item.HinhThuc}</td>
              <td className="text-center py-3 px-4 ">{item.Diem}</td>
              <td className="text-center py-3 px-4 "><Link href={`/teacher/question/${item.ID_CH}`} className="hover:text-blue-500 cursor-pointer"><i className="fa-solid fa-plus"></i></Link></td>
                 <td className="text-center py-3 px-4 hover:text-blue-500 cursor-pointer" onClick={()=>handleeditCH(item.ID_CH)}><i className="fa-solid fa-pen-to-square"></i></td>

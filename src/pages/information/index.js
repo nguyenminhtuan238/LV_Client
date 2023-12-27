@@ -66,9 +66,13 @@ export default function Informatinon(){
       }
     }
     return(
-        <>{Student.isloading?
-        <form className="w-full max-w-lg m-auto p-auto mt-5 mb-5 border border-red-400 p-12" onSubmit={(e)=>handleInformation(e)}>
-  <div className="flex flex-wrap -mx-3 mb-6">
+        <>
+        {Student.isloading?
+        <form className="w-full max-w-md mx-auto my-5 bg-white shadow-lg rounded-lg px-8 py-6" onSubmit={(e)=>handleInformation(e)}>
+          <div className="flex flex-wrap -mx-3 mb-6 justify-center ">
+          <p className="font-medium text-2xl text-rose-950">Thông tin</p>
+          </div>
+      <div className="flex flex-wrap -mx-3 mb-6">
     
     <div className="w-full px-3">
       <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-last-name">
@@ -118,33 +122,37 @@ export default function Informatinon(){
     </div>
   </div>
   <div className="flex flex-wrap -mx-3 mb-6">
+  <div className="w-full px-3">
                   <label
-                    className=" block text-sm text-gray-600"
+                  className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
                     htmlFor="cus_email"
                   >
                     Hình Minh họa
                   </label>
                   <input
-                    className="w-full px-2 py-2 text-gray-700 bg-gray-200 rounded"
+                   className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                     type="file"
                     required=""
                     onChange={(e) => setHinh(e.target.files)}
                     placeholder="Street"
                     aria-label="Email"
                   />
+                  </div>
                 </div>
                 <div className="flex flex-wrap -mx-3 mb-6">
+                <div className="w-full px-3">
                   <label
                     className=" block text-sm text-gray-600"
                     htmlFor="cus_email"
                   >
                     Hình Nền
                   </label>
-               
+                </div>
                 </div>
                 <div className="flex flex-wrap -mx-3 mb-6">
-                 
-                 <img src={process.env.NEXT_PUBLIC_IMAGEUSERd+Student.Student[0]?.Hinh} className="w-[250px] h-[250px]"/>
+                <div className="w-full px-3">
+                {Student.Student[0]?.Hinh!==null? <img src={process.env.NEXT_PUBLIC_IMAGEUSERd+Student.Student[0]?.Hinh} className="w-[250px] h-[250px]"/>:<img src="https://source.unsplash.com/uJ8LNVCBjFQ/400x400"  className="w-[250px] h-[250px]"/>}
+                </div>
                 </div>
   <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full mt-3">
   Thay Đổi

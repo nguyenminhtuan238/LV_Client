@@ -15,7 +15,9 @@ import { AddListclass, getidlistclass } from "@/store/listClass";
 import { Accesstoken } from "@/useapi/auth.api";
 import { Refreshtoken } from "@/store/user";
 import { getALLTeacher } from "@/store/Teacher";
-
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 export default function Home() {
   const ClassT = useSelector((state) => state.Class);
   const user = useSelector((state) => state.user);
@@ -126,21 +128,25 @@ export default function Home() {
         
         {ClassT.Class.map((item)=>{
           return(
-            <div key={item.ID_L} className="py-3">
-           
-            <div className="m-3">
-            <span  className="text-black  cursor-pointer text-2xl font-medium " onClick={()=>handleClickOpen(item.ID_L)}>{item.Ten_Lop}</span>
-
-            </div>
-           
-            <div className="m-3">
-            <span>Giáo Viên:{Teacher.isloading&&Teacher.Teacher.filter((it)=>it.ID_users===item.ID_GD)[0]?.Ten}</span>
-
-            </div>
-            <div className="m-3">
-            <Button onClick={()=>handleClickOpen(item.ID_L)} >Truy Cập Vào Lớp học</Button>
-
-            </div>
+            <div key={item.ID_L} className="py-3  border-b border-b-gray-300 mb-2">
+            <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+      <Box sx={{ my: 3, mx: 2 }}>
+        <Grid container alignItems="center">
+          <Grid item xs>
+            <Typography gutterBottom variant="h6" component="div">
+            Tên Lớp:       <span  className="text-black  cursor-pointer text-2xl font-medium hover:text-blue-700 " onClick={()=>handleClickOpen(item.ID_L)}>{item.Ten_Lop}</span>
+            </Typography>
+          </Grid>
+         
+        </Grid>
+        <Typography color="text.secondary" variant="body2">
+        {Teacher.isloading&&"Giáo Viên: "+ Teacher.Teacher.filter((it)=>it.ID_users===item.ID_GD)[0]?.Ten}
+        </Typography>
+      </Box>      
+      <Box sx={{ mt: 3, ml: 1, mb: 1 }}  onClick={()=>handleClickOpen(item.ID_L)}>
+        <Button  variant="outlined" className=" font-medium hover:bg-blue-500 hover:text-black ">Truy Cập Vào Lớp học</Button>
+      </Box>
+    </Box>
             </div>
           )
         })

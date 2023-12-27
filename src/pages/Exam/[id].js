@@ -14,7 +14,13 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { AddAnswerST,getidBTAnswer,getResult,updateAnswerST } from "@/store/ListANST";
+import { AddAnswerST,DeleteAnswerST,getidBTAnswer,getResult,updateAnswerST } from "@/store/ListANST";
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+import ToggleButton from '@mui/material/ToggleButton';
 export default function Home() {
   const ListQ = useSelector((state) => state.ListQ);
   const answer = useSelector((state) => state.answer);
@@ -35,6 +41,7 @@ const [h, seth] = useState(0);
 const [Noidung, setNoidung] = useState("");
 const [Dis, setDis] = useState(1);
 const [openK, setopenK] = useState(1);
+const [Disupdate, setDisupdate] = useState(false);
   useEffect(() => {
     if(!localStorage.getItem(process.env.NEXT_PUBLIC_TOKEN)){
       router.push("/")
@@ -52,7 +59,7 @@ const [openK, setopenK] = useState(1);
         id:router.query.id
       }
       await dispatch(updateTest(data))
-      router.push(`/${Exam.Examid[0].ID_L}`)
+      router.push(`/point/${Exam.Examid[0].ID_KT}`)
     } catch (error) {
       console.log(error)
     }
@@ -196,6 +203,7 @@ const HandleK =async (ID)=>{
          const res= await dispatch(AddAnswerST(data))
           unwrapResult(res)
           setCheck(!Check)
+    
 
         }
       } catch (error) {
@@ -204,6 +212,49 @@ const HandleK =async (ID)=>{
     })
     
  
+}
+const Handleupdate =async (ID)=>{
+  
+ setDisupdate(true)
+ answer.Answer.filter((a) => a.ID_CH === ID).map(async (item)=>{
+  try {
+    if(Noidung.includes(item.Noidung)){
+      if(answerST.AnsweridST.filter(it=>it.ID_CH===ID && it.ID_DA===item.ID_DA).length>0){
+        const data={
+          id:answerST.AnsweridST.filter(it=>it.ID_CH===ID && it.ID_DA===item.ID_DA)[0].ID_DAHS,
+          ID_DA:item.ID_DA,
+          NoiDung:Noidung
+
+        }
+      
+       const res= await dispatch(updateAnswerST(data))
+        unwrapResult(res)
+        setCheck(!Check)
+      }else{
+      const data={
+        ID_HS:test.Testid[0].ID_HS,
+        ID_BT:router.query.id,
+        ID_DA:item.ID_DA,
+        ID_CH:ID,
+        NoiDung:Noidung
+      }
+     const res= await dispatch(AddAnswerST(data))
+      unwrapResult(res)
+      setCheck(!Check)
+
+    }
+  }else{
+    if(answerST.AnsweridST.filter(it=>it.ID_CH===ID && it.ID_DA===item.ID_DA)[0]?.ID_DAHS){
+    const res= await dispatch(DeleteAnswerST(answerST.AnsweridST.filter(it=>it.ID_CH===ID && it.ID_DA===item.ID_DA)[0]?.ID_DAHS))
+    unwrapResult(res)
+    setCheck(!Check)
+    }
+  }
+  } catch (error) {
+    console.log(error)
+  }
+})
+
 }
 const HandleTL=(ID)=>{
   setopenK(ID)
@@ -224,14 +275,26 @@ const HandleTL=(ID)=>{
         {ListQ.ListQidpage.map((item,index)=>{
           return(
             <div key={item.ID_DSCH}>
-            <p className="font-medium">{index+Page+1+". "+item.Noidung}</p>
+            
+            <p className="font-medium">  
+    <p className="kbd mr-2"> câu {index+Page+1} </p>
+  {item.Noidung}</p>
+           {item.Hinh&& <img src={process.env.NEXT_PUBLIC_IMAGEEXAM+item.Hinh} className="w-full h-[350px] mt-1 object-cover"/>}
             {item.HinhThuc==="Tự Luận"? 
                 <div  className="py-1">
                 <Button onClick={()=>HandleTL(item.ID_CH)}>Trả Lời</Button>
                 {openK===item.ID_CH&&
                 <div>
                 {
-                  Dis==item.ID_CH? <textarea
+                  Dis==item.ID_CH? Disupdate?<textarea
+                    className="w-full px-5  py-4 text-gray-700 bg-gray-200 rounded  break-words"
+                    type="text"
+                    required
+                    value={Noidung}
+                    onChange={(e) =>setNoidung(e.target.value) }
+                    placeholder="Nhập Câu Trả Lời"
+                    rows="6"
+                  ></textarea>:<textarea
                     className="w-full px-5  py-4 text-gray-700 bg-gray-200 rounded  break-words"
                     type="text"
                     required
@@ -252,6 +315,7 @@ const HandleTL=(ID)=>{
                 }
                 
        {   Dis!=item.ID_CH? <Button onClick={()=>HandleK(item.ID_CH)}>Khóa Đáp Án</Button>:<Button disabled>Khóa Đáp Án</Button>}
+       { answerST.isloadingid&&  answerST.AnsweridST.filter(itm=>itm?.ID_CH===item?.ID_CH).length>0? <Button onClick={()=>Handleupdate(item.ID_CH)}>Sửa Đáp Án</Button>:""}
                 
               </div>}</div>:
             answer.isloading? answer.Answer.filter((a) => a.ID_CH === item.ID_CH).map((it)=>{
@@ -260,8 +324,20 @@ const HandleTL=(ID)=>{
               
                 {item.HinhThuc==="Tự Luận"? "":
                 <div  className="py-1">
-                
-                <input
+                <FormControl  name={`${item.ID_CH}`}>
+      
+      <RadioGroup
+        aria-labelledby={`${item.ID_CH}`}
+        name="radio-buttons-group"
+        defaultValue={answerST.isloadingid&&it.ID_DA === answerST.AnsweridST.filter(itm=>itm?.ID_CH===item?.ID_CH)[0]?.ID_DA} 
+      >
+        <FormControlLabel  value={`${it.ID_DA}`}      name={`${item.ID_CH}`}
+         label={it.Noidung} control={<Radio  checked={answerST.isloadingid&&it.ID_DA === answerST.AnsweridST.filter(itm=>itm?.ID_CH===item?.ID_CH)[0]?.ID_DA}         onClick={() => Handleselect(it.ID_DA,item.ID_CH)}
+/>}/>
+      
+      </RadioGroup>
+    </FormControl>
+                {/* <input
                   type="radio"
                   id="de"
                   name="dokho"
@@ -272,7 +348,8 @@ const HandleTL=(ID)=>{
                   onClick={() => Handleselect(it.ID_DA,item.ID_CH)}
                 />
 
-                <label htmlFor="de">{it.Noidung}</label>
+                <label htmlFor="de">{it.Noidung}</label> */}
+                
               </div>
                 }
                 </div>
@@ -295,7 +372,7 @@ const HandleTL=(ID)=>{
     
 <div className="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
     <Link href="/">
-        <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Thi {Exam.isloadingid&&Exam.Examid[0].Ten_KT}</h5>
+        <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Thi: {Exam.isloadingid&&Exam.Examid[0].Ten_KT}</h5>
     </Link>
     <hr ></hr>
     <div className="my-5">

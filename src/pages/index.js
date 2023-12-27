@@ -17,6 +17,14 @@ import { Refreshtoken } from "@/store/user";
 import { getALLTeacher } from "@/store/Teacher";
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 export default function Home() {
   const ClassT = useSelector((state) => state.Class);
   const user = useSelector((state) => state.user);
@@ -117,23 +125,64 @@ export default function Home() {
   };
   return (
     <>
-    
+  
      {user.user?
         <div className="flex flex-col w-full lg:flex-row mb-3 mt-5">
   <div className="grid flex-grow h-full card w-2/3  rounded-box ">
       <div className="divide-y-8 divide-blue-500  before:divide-white before:content-[''] before:block  p-3">
       <div className=" font-bold text-4xl mb-3">Danh sách Lớp học</div>
-      <div  className=" font-bold text-4xl"></div>
+      <div  className=" font-bold text-4xl">
+      <img src="https://kenh14cdn.com/thumb_w/660/2018/9/26/hoatran-img8043-15379796122261097134105.jpg" className="w-full h-[350px] mt-1 object-cover"/>
+      </div>
       </div>
   {ClassT.isloading&&
       <div className="mt-10">
         
         {ClassT.Class.map((item)=>{
           return(
-            <div key={item.ID_L} className="py-3">
-           
-            <div className="m-3">
-            <span  className="text-black  cursor-pointer text-2xl font-medium " onClick={()=>handleClickOpen(item.ID_L)}>{item.Ten_Lop}</span>
+            <div key={item.ID_L} className="py-3  border-b border-b-gray-300 mb-2">
+            <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+      <Box sx={{ my: 3, mx: 2 }}>
+        <Grid container alignItems="center">
+          <Grid item xs>
+            <Typography gutterBottom variant="h6" component="div">
+            Tên Lớp:       <span  className="text-black  cursor-pointer text-2xl font-medium hover:text-blue-700 " onClick={()=>handleClickOpen(item.ID_L)}>{item.Ten_Lop}</span>
+            </Typography>
+          </Grid>
+         
+        </Grid>
+        <Typography color="text.secondary" variant="body2">
+        {Teacher.isloading&&"Giáo Viên: "+ Teacher.Teacher.filter((it)=>it.ID_users===item.ID_GD)[0]?.Ten}
+        </Typography>
+      </Box>      
+      <Box sx={{ mt: 3, ml: 1, mb: 1 }}  onClick={()=>handleClickOpen(item.ID_L)}>
+        <Button  variant="outlined" className=" font-medium hover:bg-blue-500 hover:text-black ">Truy Cập Vào Lớp học</Button>
+      </Box>
+    </Box>
+            {/* <List
+      sx={{
+        width: '100%',
+        maxWidth: 360,
+        bgcolor: 'background.paper',
+      }}
+    >
+      <ListItem>
+        <ListItemText primary={" Tên Lớp:"+ item.Ten_Lop}  />
+       
+      </ListItem>
+      <ListItem >
+        <ListItemText  primary={Teacher.isloading&&"Giáo Viên:"+ Teacher.Teacher.filter((it)=>it.ID_users===item.ID_GD)[0]?.Ten}  />
+       
+      </ListItem>
+      <ListItem button onClick={()=>handleClickOpen(item.ID_L)} className="btn btn-primary">
+        <ListItemText primary="Truy Cập Vào Lớp học"  />
+       
+      </ListItem>
+      
+    </List> */}
+            {/* <div className="m-3">
+            <span  className="text-black   text-2xl font-medium mr-2">  Tên Lớp:</span>
+            <span  className="text-black  cursor-pointer text-2xl font-medium hover:text-blue-700 " onClick={()=>handleClickOpen(item.ID_L)}>{item.Ten_Lop}</span>
 
             </div>
            
@@ -142,9 +191,9 @@ export default function Home() {
 
             </div>
             <div className="m-3">
-            <Button onClick={()=>handleClickOpen(item.ID_L)}>Truy Cập Vào Lớp học</Button>
+            <Button onClick={()=>handleClickOpen(item.ID_L)} className="btn btn-outline btn-primary ">Truy Cập Vào Lớp học</Button>
 
-            </div>
+            </div> */}
             </div>
           )
         })

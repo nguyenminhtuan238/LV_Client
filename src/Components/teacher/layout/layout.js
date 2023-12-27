@@ -4,15 +4,31 @@ import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 import { logoutTeacher, TextTeacher } from '@/store/user';
 import { DiaLog } from './modal';
+import { getidTeacher } from '@/store/Teacher';
+import { unwrapResult } from '@reduxjs/toolkit';
 function LayoutTeacher({children}) {
     const [Open, setOpen] = useState(false);
     const router = useRouter()
+    const  Teacher  = useSelector(state => state.Teacher)
     const dispatch=useDispatch()
     useEffect(() => {
         if(localStorage.getItem(process.env.NEXT_PUBLIC_TEACHERTOKEN)){
           dispatch(TextTeacher())
         }
+        async function GetT(){
+            try {
+          
+              const res= await dispatch(getidTeacher())
+              unwrapResult(res)
+      
+           
+            } catch (error) {
+              console.log(error)
+            }
+          }
+          GetT()
       }, []);
+    
       const logout=(e)=>{
           e.preventDefault()
         localStorage.removeItem(process.env.NEXT_PUBLIC_TEACHERTOKEN)
@@ -37,7 +53,7 @@ function LayoutTeacher({children}) {
             </Link>
             <Link href="/teacher/exam" className={`flex items-center ${router.asPath==="/teacher/exam"?"active-nav-link":"opacity-75 hover:opacity-100 "} text-white py-4 pl-6 nav-item`}>
                 <i className="fas fa-sticky-note mr-3"></i>
-                Quản lý bài thi
+                Quản lý Kỳ thi
             </Link>
             <Link href="/teacher/Class"  className={`flex items-center ${router.asPath==="/teacher/Class"?"active-nav-link":"opacity-75 hover:opacity-100 "} text-white py-4 pl-6 nav-item`}>
                 <i className="fas fa-table mr-3"></i>
@@ -63,15 +79,16 @@ function LayoutTeacher({children}) {
         <header className="w-full items-center bg-white py-2 px-6 hidden sm:flex">
             <div className="w-1/2"></div>
             <div  className="relative w-1/2 flex justify-end">
+            {Teacher.isloading&&
                 <button onClick={()=>setOpen(!Open)} className="realtive z-10 w-12 h-12 rounded-full overflow-hidden border-4 border-gray-400 hover:border-gray-300 focus:border-gray-300 focus:outline-none">
-                    <img src="https://source.unsplash.com/uJ8LNVCBjFQ/400x400"/>
+                {Teacher.Teacher[0]?.Hinh!==null? <img src={process.env.NEXT_PUBLIC_IMAGEUSERd+Teacher.Teacher[0]?.Hinh} className="w-[400] h-[400]"/>: <img src="https://source.unsplash.com/uJ8LNVCBjFQ/400x400"  className="w-[250px] h-[250px]"/>}
                 </button>
+            }
                 {Open && <button onClick={()=>setOpen(false)} className="h-full w-full fixed inset-0 cursor-default"></button>
                 }
                 {Open&&
                     <div  className="absolute w-32 bg-white rounded-lg shadow-lg py-2 mt-16">
                     <Link href="/teacher/information" className="block px-4 py-2 account-link hover:text-white">Tài Khoản</Link>
-                    <a href="#" className="block px-4 py-2 account-link hover:text-white">Support</a>
                     <Link href="#" className="block px-4 py-2 account-link hover:text-white" onClick={(e)=>logout(e)}>Đăng Xuất</Link>
                 </div>
                 }

@@ -2,6 +2,7 @@ import ApiServices from "./api.services"
 import ApiteacherServices from "./apiteacher.services"
 const ListClassAPI={
     Add(data){
+        
        return ApiServices.post("api/ListClass/",data)
     },
     Update(data){

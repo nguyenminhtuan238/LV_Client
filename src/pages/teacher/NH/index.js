@@ -98,7 +98,7 @@ function Teacher() {
                 console.log(data)
                 const add=await dispatch(AddNHCH(data))
                 unwrapResult(add)
-               setCheDo("Cộng Cộng")
+               setCheDo(1)
                setTen_NG("")
                setSoCH(1)
                 setOpen(false)
